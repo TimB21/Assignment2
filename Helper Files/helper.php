@@ -3,12 +3,6 @@
 require_once("inputTags.php");
 require_once("formModel.php"); 
 
-// I've gone out of my way to hide my username and password from you.
-// It is secretly imported via the contents of the $_CONFIG array which
-// are set elsewhere. When you write your own code, you should simply
-// put your username and password directly into the parameter slots below.
-// Don't use the $_CONFIG array since it won't exist in your code.
-// Also, delete this comment if you end up copying this code as a starting point.
 $mysql = new mysqli('localhost','berlangat_trading','qLw6gZ','berlangat_trading');		// Put your actual username here (same as SU/buzz username)
 
 /** Function: getDBResultArray()

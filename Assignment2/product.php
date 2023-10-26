@@ -31,9 +31,10 @@ Fill out information about the product you intend to sell<BR>
 	<TD align="right">Category</TD>
 	<TD align="left">
 		<SELECT name="productcategoryid" id="productcategoryid"><OPTION value="1" >
-			   Book</OPTION><OPTION value="2" >
-			   CD</OPTION><OPTION value="3" >
-			   Game</OPTION></SELECT>	</TD>
+			   PlayerCard</OPTION><OPTION value="2" >
+			   CardBundle</OPTION><OPTION value="3" >
+			   AutographedCard</OPTION><OPTION value="4" >
+			   Collectable<OPTION><OPTION value="4" >	</TD>
 </TR>
 <TR>
 	<TD align="right">Name</TD>

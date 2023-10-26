@@ -125,3 +125,5 @@ CREATE TABLE Purchase (
 	datastateid TINYINT NOT NULL DEFAULT 1, FOREIGN KEY (datastateid) REFERENCES datastate(datastateid)
 );
 
+
+

@@ -1,14 +1,16 @@
 <HTML>
 <BODY>
-
+<!--Centered header for the Product page -->
 <CENTER>
 <H1>Product Page</H1>
+<!--Slogan for Product page -->
 (One person's garbage is another person's treasure!)<BR>
+<!-- Link to search page-->
 <A href="assignment2.php">Search</A>
 <BR><BR>
 
 <?php
-// Useful functions written by me
+
 require_once("helper.php");
 ?>
 

@@ -120,7 +120,8 @@ CREATE TABLE Purchase (
     purchaseid BIGINT NOT NULL AUTO_INCREMENT, PRIMARY KEY(purchaseid),
     offerID BIGINT NOT NULL,
     username VARCHAR(255) NOT NULL, -- buyer for sale
-    purchaseTime DATETIME NOT NULL,
+    purchaseTime DATETIME NOT NULL, 
+    quantity INT NOT NULL, -- add to schema
     FOREIGN KEY (offerID) REFERENCES Offer(offerID),
 	datastateid TINYINT NOT NULL DEFAULT 1, FOREIGN KEY (datastateid) REFERENCES datastate(datastateid)
 );

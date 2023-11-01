@@ -25,23 +25,22 @@
 </TABLE>
 <BR><BR>
 
-
-</CENTER>
-
-</BODY>
-</HTML>
-
-
+<CENTER>
 <?php
 // Useful functions written 
 require_once("helper.php"); 
 
-$searchtext = getRequestData("search");
+$searchtext = getRequestData("search"); 
+$category = getRequestData("productcategoryid"); 
+
 if($searchtext !== "") { // If the search interface has been filled out
 	// Complicated helper function that splits up user input into separate search terms
-	$searchComponents = getSearchStringComponents($searchtext);	
-	echo "These were the search terms<BR>\n";
-	var_dump($searchComponents);
+	$searchComponents = getSearchStringComponents($searchtext);	 
+
+	// Debugging tool
+	// echo "These were the search terms<BR>\n";
+	// var_dump($searchComponents); 
+
 	// Incorporate these search terms into LIKE checks of a SQL statement
 	$searchChecks = array(); // Empty to start
 	// All of these columns will be searched using LIKE
@@ -54,16 +53,27 @@ if($searchtext !== "") { // If the search interface has been filled out
 			// Add extra component to array of search checks
 			$searchChecks[] = " $col LIKE '%$target%' ";
 		}
-	}
+	} 
+    
+	// Include category in the query if it's selected
+    $categoryCondition = "";
+    if ($category !== "all") {
+        $categoryCondition = "AND Category.categoryID = $category";
+    }
+
 	// Same query as above, but HAVING clause will narrow the search.
 	// HAVING clause is required because I am referring to the aliases
 	// I defined using the AS keyword
-	$query = "SELECT singular, productName, description
+	$query = "SELECT productid, singular, productName, description
               FROM Product
               JOIN Category ON Product.categoryID = Category.categoryID
-              WHERE " . implode(" AND ", $searchChecks);
-
-    echo "<BR>This is the resulting query<BR><BR>\n$query<BR><BR>\nAnd the results<BR>\n";
-    showQueryResultInHTML($query, productid, array("singular" => "Category", "productName" => "Product Name", "description" => "Description"), FALSE, "product_info.php", "productName");	
+              WHERE " . implode(" AND ", $searchChecks). " $categoryCondition";
+    showQueryResultInHTML($query, "productid", array("singular" => "Category", "productName" => "Product Name", "description" => "Description"), FALSE, "product_info.php", "productName");
 }	
-?>
+?>  
+</CENTER>
+
+</CENTER>
+
+</BODY>
+</HTML>

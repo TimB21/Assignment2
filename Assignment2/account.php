@@ -24,7 +24,45 @@ if (isset($_POST['login'])) {
 
     // Validate user input
     if (verifyEmailAddress($userInput)) {
-        // User input is a valid email address
+        // User input is a valid email address  
+
+        // Retrieve user input (email/username)
+        $userInput = $_POST['emailaddressusername'];
+
+        if (isset($_POST['newuser']) && $_POST['newuser'] === 'new') {
+            // Check if the "New User" radio button is selected      
+            $username = $userInput;
+            
+            // Validate user input
+            if (verifyEmailAddress($userInput)) {
+                // User input is a valid email address
+                // Prepare the INSERT statement
+                $insertQuery = "INSERT INTO User (username, datastateid) VALUES (?, 1)"; 
+                $stmt = $mysql->prepare($insertQuery);
+        
+                if ($stmt === false) {
+                    echo "Error preparing the statement";
+                } else {
+                    // Bind the username parameter
+                    $stmt->bind_param("s", $userInput);
+        
+                    // Execute the INSERT statement
+                    if ($stmt->execute()) {
+                        // New user created successfully
+                        echo "New user created successfully!";
+                    } else {
+                        // Error occurred while creating a new user
+                        echo "Error creating a new user. Please try again.";
+                    }
+        
+                    // Close the statement and the database connection
+                    $stmt->close();
+                }
+            } else {
+                // User input is not a valid email address, show an error message
+                echo "Invalid email address format. Please enter a valid email address.";
+            }
+        }
 
         // Prepare the SQL statement
         $selectUserQuery = "SELECT * FROM User WHERE username = ?";
@@ -46,7 +84,7 @@ if (isset($_POST['login'])) {
                 $title = $row['username'];
             } 
             else { 
-                echo "User not found. If you are a new user, please click the I'm a new user box."
+                echo "User not found. If you are a new user, please click the I'm a new user box.";
             }  
 
             $selectPurchasesQuery = "SELECT * FROM Purchase WHERE username = ?";  
@@ -60,8 +98,38 @@ if (isset($_POST['login'])) {
                 // Bind the songid parameter
                 $purchasestmt->bind_param("s", $userInput); 
                 // Executes select statement 
-                $purchasestmt->execute(); 
-            } 
+                $purchasestmt->execute();  
+            }   
+
+                    // Fetch and display the results for purchases
+                    echo "<h2>Purchases</h2>";
+                    $result = $purchasestmt->get_result();
+                    if ($result->num_rows === 0) {
+                        echo "No purchases found.";
+                    } else {
+                        "<TABLE border='1'>";
+                        "<TR>
+                        <TH>Name</TH>
+                        <TH>Category</TH>
+                        <TH>Quantity</TH>
+                        <TH>Unit Cost</TH>
+                        <TH>Seller</TH>
+                        <TH>Date</TH>
+                        </TR>";
+                    while ($row = $result->fetch_assoc()) {
+                        echo "<TR>";
+                        echo "<TD>" . $row['productName'] . "</TD>";
+                        echo "<TD>" . $row['singular'] . "</TD>";
+                        echo "<TD>" . $row['quantity'] . "</TD>";
+                        echo "<TD>" . $row['unitprice'] . "</TD>";
+                        echo "<TD>" . $row['username'] . "</TD>";
+                        echo "<TD>" . $row['purchaseTime'] . "</TD>";
+                        echo "</TR>";
+                    }
+                    echo "</TABLE>";
+                    } 
+                
+                    $purchasestmt->close();
 
             $selectSalesQuery = "SELECT * FROM Offer WHERE username = ? AND Offer.offerID IN (SELECT offerID FROM Purchase WHERE username = ?)";
             $salesstmt = $mysql->prepare($selectSalesQuery);
@@ -73,8 +141,39 @@ if (isset($_POST['login'])) {
                 // Bind the username parameter
                 $salesstmt->bind_param("ss", $userInput, $userInput);
                 // Execute the select statement
-                $salesstmt->execute();
-            }
+                $salesstmt->execute(); 
+            } 
+
+             // Fetch and display the results for sales
+             echo "<h2>Sales</h2>";
+             $result = $salesstmt->get_result();
+             if ($result->num_rows === 0) {
+                 echo "No sales found.";
+             } else {
+                 "<TABLE border='1'>";
+                 "<TR>
+                 <TH>Name</TH>
+                 <TH>Category</TH>
+                 <TH>Quantity</TH>
+                 <TH>Unit Cost</TH>
+                 <TH>Buyer</TH>
+                 <TH>Date</TH>
+                 </TR>";
+                 while ($row = $result->fetch_assoc()) {
+                 echo "<TR>";
+                 echo "<TD>" . $row['productName'] . "</TD>";
+                 echo "<TD>" . $row['singular'] . "</TD>";
+                 echo "<TD>" . $row['quantity'] . "</TD>";
+                 echo "<TD>" . $row['unitprice'] . "</TD>";
+                 echo "<TD>" . $row['username'] . "</TD>";
+                 echo "<TD>" . $row['purchaseTime'] . "</TD>";
+                 echo "</TR>";
+             }
+             echo "</TABLE>";
+             } 
+
+             $salesstmt->close(); 
+ 
 
             $selectOffersQuery = "SELECT * FROM Offer WHERE username = ?";
             $offersstmt = $mysql->prepare($selectOffersQuery);
@@ -86,65 +185,38 @@ if (isset($_POST['login'])) {
                 // Bind the username parameter
                 $offersstmt->bind_param("s", $userInput);
                 // Execute the select statement
-                $offersstmt->execute();
+                $offersstmt->execute(); 
             } 
 
-            // Fetch and display the results for purchases
-            echo "<h2>Purchases:</h2>";
-            $result = $purchasestmt->get_result();
-            if ($result->num_rows === 0) {
-                echo "No purchases found.";
-            } else {
-                while ($row = $result->fetch_assoc()) {
-                    echo "Purchase ID: " . $row['purchaseid'] . "<br>";
-                    // Check if any field is empty
-                    if (empty($row['field1']) || empty($row['field2']) || empty($row['field3'])) {
-                        echo "This purchase has missing information.<br>";
-                    } else {
-                        // Display other purchase details as needed
-                    }
-                }
-            }
-
-            // Fetch and display the results for sales
-            echo "<h2>Sales:</h2>";
-            $result = $salesstmt->get_result();
-            if ($result->num_rows === 0) {
-                echo "No sales found.";
-            } else {
-                while ($row = $result->fetch_assoc()) {
-                    echo "Offer ID: " . $row['offerid'] . "<br>";
-                    // Check if any field is empty
-                    if (empty($row['field1']) || empty($row['field2']) || empty($row['field3'])) {
-                        echo "This sale has missing information.<br>";
-                    } else {
-                        // Display other sales details as needed
-                    }
-                }
-            }
-
             // Fetch and display the results for offers
-            echo "<h2>Outstanding Offers:</h2>";
+            echo "<h2>Outstanding Offers</h2>";
             $result = $offersstmt->get_result();
             if ($result->num_rows === 0) {
                 echo "No outstanding offers found.";
             } else {
+                "<TABLE border='1'>";
+                "<TR>
+                <TH>Name</TH>
+                <TH>Category</TH>
+                <TH># Available</TH>
+                <TH>Price</TH>
+                <TH>Details</TH>
+                </TR>";
                 while ($row = $result->fetch_assoc()) {
-                    echo "Offer ID: " . $row['offerid'] . "<br>";
-                    // Check if any field is empty
-                    if (empty($row['field1']) || empty($row['field2']) || empty($row['field3'])) {
-                        echo "This offer has missing information.<br>";
-                    } else {
-                        // Display other offer details as needed
-                    }
+                    echo "<TR>";
+                    echo "<TD>" . $row['productName'] . "</TD>";
+                    echo "<TD>" . $row['singular'] . "</TD>";
+                    echo "<TD>" . $row['numberOfUnits'] . "</TD>";
+                    echo "<TD>" . $row['unitPrice'] . "</TD>";  
+                    echo "<TD>" . $row['details'] . "</TD>";  
+                    echo "</TR>";
                 }
-            }
+                echo "</table>";
+            } 
+            $offersstmt->close();
 
             // Close the statement
             $stmt->close(); 
-            $purchasestmt->close();
-            $salesstmt->close();
-            $offersstmt->close(); 
         }
     } else {
         // User input is not a valid email address, show an error message
@@ -185,7 +257,6 @@ if (isset($_POST['newuser'])) {
 
             // Close the statement and the database connection
             $stmt->close();
-            $connection->close();
         }
     } else {
         // User input is not a valid email address, show an error message

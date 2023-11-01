@@ -34,7 +34,7 @@ function getDBResultArray($query, $pid) {
 function associateRowsWithKey($result, $pid) {
 	$data = array();
 	while($row = $result->fetch_assoc()) { 
-		$data[$row[$pid]] = $row;
+		$data[$row[$pid]] = $row; 
 	}
 	$result->close(); 
 	return $data;

@@ -86,50 +86,17 @@ if (isset($_POST['login'])) {
             else { 
                 echo "User not found. If you are a new user, please click the I'm a new user box.";
             }  
+ 
 
-            $selectPurchasesQuery = "SELECT * FROM Purchase WHERE username = ?";  
+            $selectPurchasesQuery = "SELECT p.productid, p.productName, c.singular, o.numberOfUnits, o.unitPrice, o.username, Purchase.purchaseTime
+            FROM Product p
+            JOIN Category c ON p.categoryID = c.categoryID
+            JOIN Offer o ON p.productID = o.productID 
+            JOIN Purchase ON Purchase.offerID = o.offerID
+            WHERE o.username = '$userInput'";
 
-            $purchasestmt = $mysql->prepare($selectPurchasesQuery);
-	
-            // Ensures that the statement is properly prepared
-            if ($purchasestmt === false) {
-                echo "Error preparing the statement";
-            } else { 
-                // Bind the songid parameter
-                $purchasestmt->bind_param("s", $userInput); 
-                // Executes select statement 
-                $purchasestmt->execute();  
-            }   
-
-                    // Fetch and display the results for purchases
-                    echo "<h2>Purchases</h2>";
-                    $result = $purchasestmt->get_result();
-                    if ($result->num_rows === 0) {
-                        echo "No purchases found.";
-                    } else {
-                        "<TABLE border='1'>";
-                        "<TR>
-                        <TH>Name</TH>
-                        <TH>Category</TH>
-                        <TH>Quantity</TH>
-                        <TH>Unit Cost</TH>
-                        <TH>Seller</TH>
-                        <TH>Date</TH>
-                        </TR>";
-                    while ($row = $result->fetch_assoc()) {
-                        echo "<TR>";
-                        echo "<TD>" . $row['productName'] . "</TD>";
-                        echo "<TD>" . $row['singular'] . "</TD>";
-                        echo "<TD>" . $row['quantity'] . "</TD>";
-                        echo "<TD>" . $row['unitprice'] . "</TD>";
-                        echo "<TD>" . $row['username'] . "</TD>";
-                        echo "<TD>" . $row['purchaseTime'] . "</TD>";
-                        echo "</TR>";
-                    }
-                    echo "</TABLE>";
-                    } 
-                
-                    $purchasestmt->close();
+            echo "<h2>Purchases</h2>";
+            showQueryResultInHTML($selectPurchasesQuery, "productid", array("productName" => "Product Name", "singular" => "Category", "numberOfUnits" => "# Available", "unitPrice" => "Unit Price", "username" => "Seller", "purchaseTime" => "Purchase Time"), FALSE, NULL, NULL); 
 
             $selectSalesQuery = "SELECT * FROM Offer WHERE username = ? AND Offer.offerID IN (SELECT offerID FROM Purchase WHERE username = ?)";
             $salesstmt = $mysql->prepare($selectSalesQuery);
@@ -174,55 +141,21 @@ if (isset($_POST['login'])) {
 
              $salesstmt->close(); 
  
+             $selectOffersQuery = "SELECT p.productid, c.singular, p.productName, p.description, o.numberOfUnits
+             FROM Product p
+             JOIN Category c ON p.categoryID = c.categoryID
+             JOIN Offer o ON p.productID = o.productID
+             WHERE o.username = '$userInput'";
 
-            $selectOffersQuery = "SELECT * FROM Offer WHERE username = ?";
-            $offersstmt = $mysql->prepare($selectOffersQuery);
-
-            // Ensure the statement is properly prepared
-            if ($offersstmt === false) {
-                echo "Error preparing the statement for offers";
-            } else {
-                // Bind the username parameter
-                $offersstmt->bind_param("s", $userInput);
-                // Execute the select statement
-                $offersstmt->execute(); 
-            } 
-
-            // Fetch and display the results for offers
-            echo "<h2>Outstanding Offers</h2>";
-            $result = $offersstmt->get_result();
-            if ($result->num_rows === 0) {
-                echo "No outstanding offers found.";
-            } else {
-                "<TABLE border='1'>";
-                "<TR>
-                <TH>Name</TH>
-                <TH>Category</TH>
-                <TH># Available</TH>
-                <TH>Price</TH>
-                <TH>Details</TH>
-                </TR>";
-                while ($row = $result->fetch_assoc()) {
-                    echo "<TR>";
-                    echo "<TD>" . $row['productName'] . "</TD>";
-                    echo "<TD>" . $row['singular'] . "</TD>";
-                    echo "<TD>" . $row['numberOfUnits'] . "</TD>";
-                    echo "<TD>" . $row['unitPrice'] . "</TD>";  
-                    echo "<TD>" . $row['details'] . "</TD>";  
-                    echo "</TR>";
-                }
-                echo "</table>";
-            } 
-            $offersstmt->close();
-
-            // Close the statement
-            $stmt->close(); 
+        
+            echo "<h2>Outstanding Offers</h2>"; 
+            showQueryResultInHTML($selectOffersQuery, "productid", array("productName" => "Product Name", "singular" => "Category", "numberOfUnits" => "# Available", "description" => "Details"), FALSE, "product.php", "productName"); 
         }
     } else {
         // User input is not a valid email address, show an error message
         echo "Invalid email address format. Please enter a valid email address.";
     }
-}
+} 
 ?>
 
 <?php

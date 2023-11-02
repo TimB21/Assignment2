@@ -68,8 +68,8 @@ if($searchtext !== "") { // If the search interface has been filled out
               FROM Product
               JOIN Category ON Product.categoryID = Category.categoryID
               WHERE " . implode(" AND ", $searchChecks). " $categoryCondition";
-    showQueryResultInHTML($query, "productid", array("singular" => "Category", "productName" => "Product Name", "description" => "Description"), FALSE, "product_info.php", "productName");
-}	
+    showQueryResultInHTML($query, "productid", array("singular" => "Category", "productName" => "Product Name", "description" => "Description"), FALSE, "product.php", "productName");
+}	 
 ?>  
 </CENTER>
 

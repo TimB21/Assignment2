@@ -108,11 +108,18 @@ CREATE TABLE Offer (
     numberOfUnits INT NOT NULL,
     unitPrice DECIMAL(10, 2) NOT NULL,
     details TEXT NOT NULL,
-    category VARCHAR(255) NOT NULL,
+    category VARCHAR(255) NOT NULL, 
+    datastateid TINYINT NOT NULL DEFAULT 1,
     FOREIGN KEY (username) REFERENCES User(username),
     FOREIGN KEY (productID) REFERENCES Product(productID),
-	datastateid TINYINT NOT NULL DEFAULT 1, FOREIGN KEY (datastateid) REFERENCES datastate(datastateid)
-); 
+    FOREIGN KEY (datastateid) REFERENCES datastate(datastateid)
+);  
+INSERT INTO Offer (username, productID, numberOfUnits, unitPrice, details, category)
+VALUES ('berlangat@southwestern.edu', 3, 5, 10.99, 'This is a sample offer', 'Player Card');  
+INSERT INTO Offer (username, productID, numberOfUnits, unitPrice, details, category)
+VALUES ('berlangat@southwestern.edu', 17, 10, 20, 'This is a sample offer again', 'Player Card'); 
+
+
 
 
 -- Create the Purchase table with a foreign key reference to Offer
@@ -121,10 +128,14 @@ CREATE TABLE Purchase (
     offerID BIGINT NOT NULL,
     username VARCHAR(255) NOT NULL, -- buyer for sale
     purchaseTime DATETIME NOT NULL, 
-    quantity INT NOT NULL, -- add to schema
+    quantity INT NOT NULL, -- add to schema 
+    datastateid TINYINT NOT NULL DEFAULT 1,
     FOREIGN KEY (offerID) REFERENCES Offer(offerID),
-	datastateid TINYINT NOT NULL DEFAULT 1, FOREIGN KEY (datastateid) REFERENCES datastate(datastateid)
-);
+	FOREIGN KEY (datastateid) REFERENCES datastate(datastateid)
+); 
+
+INSERT INTO Purchase (username, offerID, purchaseTime, quantity)
+VALUES ('timber@icloud.com', 1, NOW(), 5); 
 
 
 

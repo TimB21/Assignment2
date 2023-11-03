@@ -26,7 +26,7 @@ if (isset($_GET['productid'])) {
 
 	showQueryResultInHTML($query, "productid", array("singular" => "Category", "productName" => "Product Name", "description" => "Description"), NULL, NULL, NULL);  
 
-	$selectOffersQuery = "SELECT p.productid, c.singular, p.productName, p.description, o.numberOfUnits
+	$selectOffersQuery = "SELECT o.username, p.productid, o.details, o.numberOfUnits
              FROM Product p
              JOIN Category c ON p.categoryID = c.categoryID
              JOIN Offer o ON p.productID = o.productID
@@ -34,16 +34,32 @@ if (isset($_GET['productid'])) {
 
         
     echo "<h2>Outstanding Offers</h2>"; 
-    showQueryResultInHTML($selectOffersQuery, "productid", array("productName" => "Product Name", "singular" => "Category", "numberOfUnits" => "# Available", "description" => "Details"), FALSE, NULL, NULL);  
-    ?> 
-	<FORM name="buyitem" action="account.php" method="POST">
-    <label for="numberpurchased">Quantity:</label>
-    <input type="text" size="1" name="numberpurchased" id="numberpurchased" value="1" maxlength="5">
-    <button type="submit" name="buy" id="buy">Buy</button>
-	</FORM>
+    showQueryResultInHTML($selectOffersQuery, "productid", array("username" => "Username", "numberOfUnits" => "# Available", "details" => "Details"), FALSE, NULL, NULL);  
+	
+	// Assuming $productID contains the specific product ID
+	$selectOfferIdQuery = "SELECT offerid FROM Offer WHERE productID = $productID";
 
-	<?php 
-}
+	// Execute the query
+	$result = $mysql->query($selectOfferIdQuery);
+
+	$offerid = '';
+
+	if ($result) {
+		if ($result->num_rows > 0) {
+			$row = $result->fetch_assoc();
+			$offerid = $row['offerid']; 
+			?>  
+		<FORM name="buy" action="account.php" method="POST">
+		<label for="numberpurchased">Quantity:</label> 
+		<input type="text" size="1" name="numberpurchased" id="numberpurchased" value="1" maxlength="5"> 
+		<input type="hidden" name="productid" value="<?php echo $productID; ?>">
+		<input type="hidden" name="offerid" value="<?php echo $offerid; ?>">
+		<button type="submit" name="buy" id="buy">Buy</button>
+		</FORM> 
+		<?php
+		 } 
+	} 
+} 
 
 if(!isset($_POST['submitnew']) && !isset($_GET['productid'])) {   
 	?>
@@ -102,8 +118,9 @@ if(!isset($_POST['submitnew']) && !isset($_GET['productid'])) {
     </CENTER>
 	<?php
 }
-?>
-<?php
+?> 
+
+<?php 
 // Check if the form is submitted
 if (isset($_POST['submitnew'])) {
     // Get the user's username from the form
@@ -115,9 +132,9 @@ if (isset($_POST['submitnew'])) {
 
         // Retrieve product information from the form 
 		$email = $_POST['emailaddressusername'];
-        $productCategoryID = $_POST['productcategoryid'];
-        $productName = $_POST['name'];
-        $productDescription = $_POST['description'];
+        $productCategoryID = $_POST['productcategoryid']; 
+        $productName = $_POST['name']; 
+        $productDescription = $_POST['description']; 
         $numberAvailable = $_POST['numberavailable'];
         $sellingPrice = $_POST['sellingprice'];
         $details = $_POST['details'];
@@ -131,15 +148,6 @@ if (isset($_POST['submitnew'])) {
             echo "Selling price must be a valid dollar amount.";  
 		}  
 		else {   
-			// use the hidden input field method
-			echo "<input type='hidden' name='emailaddressusername' value='$userInput'>";
-			echo "<input type='hidden' name='productcategoryid' value='$productCategoryID'>";
-			echo "<input type='hidden' name='name' value='$productName'>";
-			echo "<input type='hidden' name='description' value='$productDescription'>";
-			echo "<input type='hidden' name='numberavailable' value='$numberAvailable'>";
-			echo "<input type='hidden' name='sellingprice' value='$sellingPrice'>";
-			echo "<input type='hidden' name='details' value='$details'>";
-			echo "</form>"; 
 			?>
 			<table border="1">
 				<tr>
@@ -175,7 +183,14 @@ if (isset($_POST['submitnew'])) {
 				</tr>
 			</table>
 			<form method="post" action="product.php">
-				<input type="submit" name="confirm" id="confirm" value="All Information is Accurate. Offer Product">
+				<input type="submit" name="confirm" id="confirm" value="All Information is Accurate. Offer Product"> 
+				<input type='hidden' name='emailaddressusername' value='<?php echo $email; ?>'>
+				<input type='hidden' name='productcategoryid' value='<?php echo $productCategoryID; ?>'>
+				<input type='hidden' name='name' value='<?php echo $productName; ?>'>
+				<input type='hidden' name='description' value='<?php echo $productDescription; ?>'>
+				<input type='hidden' name='numberavailable' value='<?php echo $numberAvailable; ?>'>
+				<input type='hidden' name='sellingprice' value='<?php echo $sellingPrice; ?>'>
+        		<input type='hidden' name='details' value='<?php echo $details; ?>'>
 			</form>
 		<?php
 		} 
@@ -213,40 +228,123 @@ if (isset($_POST['submitnew'])) {
 				WHERE " . implode(" AND ", $searchChecks); 
 
 		showQueryResultInHTML($query, "productid", array("singular" => "Category", "productName" => "Product Name", "description" => "Description"), TRUE, "product.php", "productName"); 
-		
-		if (isset($_POST['confirm'])) { 
-		
-			// Get data from the POST request
-			$productName = $_POST['name'];
-			$productDescription = $_POST['description'];
-			$productCategoryID = $_POST['productcategoryid'];
-		
-			// Insert the product information into the database
-			$insertProductQuery = "INSERT INTO Product (productName, description, categoryID) VALUES (?, ?, ?)";
-			$stmt = $mysql->prepare($insertProductQuery);
-		
-			if ($stmt === false) {
-				echo "Error preparing the statement for product insertion";
-			} else {
-				// Bind the parameters
-				$stmt->bind_param("ssi", $productName, $productDescription, $productCategoryID);
-		
-				// Execute the insert statement
-				$stmt->execute();
-		
-				// Close the statement
-				$stmt->close();
-		
-				// Display a success message
-				echo "Product information has been successfully stored.";
-			}
-		} 
     } else {
         // User input is not a valid email address, show an error message
         echo "Invalid email address format. Please enter a valid email address.";
     } 
 	} 
 } 
+
+if (isset($_POST['confirm'])) { 
+		
+	// Retrieve product information from the form 
+	$email = $_POST['emailaddressusername'];
+	$productCategoryID = $_POST['productcategoryid'];  
+	$productName = $_POST['name']; 
+	$productDescription = $_POST['description']; 
+	$numberAvailable = $_POST['numberavailable'];
+	$sellingPrice = $_POST['sellingprice'];
+	$details = $_POST['details']; 
+
+	// Construct the SQL query to select the category singular
+	$selectCategoryQuery = "SELECT singular FROM Category WHERE categoryID = $productCategoryID";
+
+	// Execute the query
+	$result = $mysql->query($selectCategoryQuery);
+
+	$category = '';  
+
+	if ($result) {
+		if ($result->num_rows > 0) {
+			$row = $result->fetch_assoc();
+			$categorySingular = $row['singular']; 
+			$category = $categorySingular;
+			echo "Category Singular: " . $categorySingular;
+		} else {
+			echo "Category not found.";
+		}  
+	}  
+
+	$productID = $_POST['productid'];
+	
+	if (productid === 'NEW') {
+	// Insert the product information into the database
+	$insertNewProductQuery = "INSERT INTO Product (productName, description, categoryID) VALUES (?, ?, ?)";  
+	
+	$stmt = $mysql->prepare($insertProductQuery);  
+
+	if ($stmt === false) {
+		echo "Error preparing the statement for product insertion";
+	} else {
+		// Bind the parameters
+		$stmt->bind_param("ssi", $productName, $productDescription, $productCategoryID);
+
+		// Execute the insert statement
+		$stmt->execute(); 
+
+		// Close the statement
+		$stmt->close();  
+
+		// Display a success message
+		echo "Product information has been successfully stored."; 
+		}
+	
+		$insertOfferQuery = "INSERT INTO Offer (username, productID, numberOfUnits, unitPrice, details, category) VALUES (?, ?, ?, ?, ?, ?)"; 
+		
+		$offerstmt = $mysql->prepare($insertOfferQuery);  
+
+		$getLastInsertedIDQuery = "SELECT LAST_INSERT_ID() as last_id";  
+
+		$result = $mysql->query($getLastInsertedIDQuery);
+		
+		if ($result) {
+		$row = $result->fetch_assoc();
+        $lastInsertedProductID = $row['last_id']; 
+
+		// Bind the parameters
+		$offerstmt->bind_param("siidss", $email, $lastInsertedProductID, $numberAvailable, $sellingPrice, $details, $category); 
+
+		// Execute the insert statement
+		$offerstmt->execute(); 
+
+		// Close the statement
+		$offerstmt->close();
+		}
+
+        // Redirect to the product page using the retrieved product ID
+        $productPageURL = "product.php?productid=" . $lastInsertedProductID;
+        header("Location: $productPageURL");
+        exit;   
+		}   
+		else {
+			// Replace this with your actual database insert query
+			$selectedProductID = $_POST['productid'];
+			$insertOfferQuery = "INSERT INTO Offer (username, productID, numberOfUnits, unitPrice, details, category) 
+								VALUES (?, ?, ?, ?, ?, ?)";
+			
+			// Prepare the statement
+			$stmt = $mysql->prepare($insertOfferQuery);
+	
+			if ($stmt === false) {
+				echo "Error preparing the statement for offer insertion";
+			} else {
+				$numberOfUnits = 1; // You can adjust this as needed
+	
+				// Bind the parameters
+				$stmt->bind_param("siiiss", $email, $selectedProductID, $numberOfUnits, $sellingPrice, $details, $productCategoryID);
+	
+				// Execute the insert statement
+				$stmt->execute();
+	
+				// Close the statement
+				$stmt->close();
+	
+				// Display a success message
+				echo "Offer has been successfully recorded for the selected product.";
+			}
+		}
+}
+
 
 ?> 
  </CENTER>

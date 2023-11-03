@@ -111,7 +111,7 @@ CREATE TABLE Offer (
     category VARCHAR(255) NOT NULL, 
     datastateid TINYINT NOT NULL DEFAULT 1,
     FOREIGN KEY (username) REFERENCES User(username),
-    FOREIGN KEY (productID) REFERENCES Product(productID),
+    FOREIGN KEY (productID) REFERENCES Product(productID), 
     FOREIGN KEY (datastateid) REFERENCES datastate(datastateid)
 );   
 

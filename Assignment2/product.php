@@ -1,84 +1,14 @@
 <HTML>
 <BODY>
-<<<<<<< HEAD
 <CENTER> 
 <H1>Product Page</H1>
     (One person's garbage is another person's treasure!)<BR>
     <A href="assignment2.php">Search</A>
     <BR><BR> 
 	
-=======
 <!--Centered header for the Product page -->
 <CENTER>
-<H1>Product Page</H1>
-<!--Slogan for Product page -->
-(One person's garbage is another person's treasure!)<BR>
-<!-- Link to search page-->
-<A href="assignment2.php">Search</A>
-<BR><BR>
 
-<?php
-// Useful functions written by me
-require_once("helper.php");
-?>
-
-
-Fill out information about the product you intend to sell<BR>
-<TABLE border="1">
-<FORM name="newproductform" action="product.php" method="POST"><TR>
-	<TH colspan="2" align="center">Your Information</TH>
-</TR>
-<TR>
-	<TD align="right">
-				Your E-mail Address
-			</TD>
-	<TD align="left"><INPUT type="text" size="20" name="emailaddressusername" id="emailaddressusername" value="" maxlength="255"></TD>
-</TR>
-<TR>
-	<TH colspan="2" align="center">The Product's Information</TH>
-</TR>
-<TR>
-	<TD align="right">Category</TD>
-	<TD align="left">
-		<SELECT name="productcategoryid" id="productcategoryid"><OPTION value="1" >
-			   PlayerCard</OPTION><OPTION value="2" >
-			   CardBundle</OPTION><OPTION value="3" >
-			   AutographedCard</OPTION><OPTION value="4" >
-			   Collectable<OPTION><OPTION value="4" >	</TD>
-</TR>
-<TR>
-	<TD align="right">Name</TD>
-	<TD align="left"><INPUT type="text" size="20" name="name" id="name" value="" maxlength="255"></TD>
-</TR>
-<TR>
-	<TD align="right" valign="top">Description</TD>
-	<TD align="left">
-		<TEXTAREA name="description" id="description" cols="20" rows="10"></TEXTAREA>	</TD>
-</TR>
-<TR>
-	<TH colspan="2" align="center">Details of Your Offer</TH>
-</TR>
-<TR>
-	<TD align="right">Number Offered</TD>
-	<TD align="left"><INPUT type="text" size="10" name="numberavailable" id="numberavailable" value="" maxlength="10"></TD>
-</TR>
-<TR>
-	<TD align="right">Selling Price</TD>
-	<TD align="left">$<INPUT type="text" size="10" name="sellingprice" id="sellingprice" value="" maxlength="10"></TD>
-</TR>
-<TR>
-	<TD align="right" valign="top">Details</TD>
-	<TD align="left"><TEXTAREA name="details" id="details" cols="20" rows="10"></TEXTAREA></TD>
-</TR>
-<TR>
-	<TD colspan="2" align="center"><INPUT type="submit" name="submitnew" id="submitnew" value="Submit"></TD>
-</TR>
-</FORM></TABLE>
-
-</BODY>
-</HTML>
-
->>>>>>> df17831d0330c750a9bfc49e4af4f4c4cbf48227
 <?php
 // Useful functions written by me
 require_once("helper.php"); 
@@ -94,12 +24,26 @@ if (isset($_GET['productid'])) {
               JOIN Category ON Product.categoryID = Category.categoryID
 			  AND productid = $productID"; 
 
-	showQueryResultInHTML($query, "productid", array("singular" => "Category", "productName" => "Product Name", "description" => "Description"), NULL, NULL, NULL); 
-    $result = $mysql->query($query);
-}
-?>
+	showQueryResultInHTML($query, "productid", array("singular" => "Category", "productName" => "Product Name", "description" => "Description"), NULL, NULL, NULL);  
 
-<?php 
+	$selectOffersQuery = "SELECT p.productid, c.singular, p.productName, p.description, o.numberOfUnits
+             FROM Product p
+             JOIN Category c ON p.categoryID = c.categoryID
+             JOIN Offer o ON p.productID = o.productID
+             WHERE o.productid = $productID";
+
+        
+    echo "<h2>Outstanding Offers</h2>"; 
+    showQueryResultInHTML($selectOffersQuery, "productid", array("productName" => "Product Name", "singular" => "Category", "numberOfUnits" => "# Available", "description" => "Details"), FALSE, NULL, NULL);  
+    ?> 
+	<FORM name="buyitem" action="account.php" method="POST">
+    <label for="numberpurchased">Quantity:</label>
+    <input type="text" size="1" name="numberpurchased" id="numberpurchased" value="1" maxlength="5">
+    <button type="submit" name="buy" id="buy">Buy</button>
+	</FORM>
+
+	<?php 
+}
 
 if(!isset($_POST['submitnew']) && !isset($_GET['productid'])) {   
 	?>
@@ -186,7 +130,8 @@ if (isset($_POST['submitnew'])) {
         } elseif (!verifyMoney($sellingPrice)) {
             echo "Selling price must be a valid dollar amount.";  
 		}  
-		else {  
+		else {   
+			// use the hidden input field method
 			echo "<input type='hidden' name='emailaddressusername' value='$userInput'>";
 			echo "<input type='hidden' name='productcategoryid' value='$productCategoryID'>";
 			echo "<input type='hidden' name='name' value='$productName'>";
@@ -301,8 +246,9 @@ if (isset($_POST['submitnew'])) {
         echo "Invalid email address format. Please enter a valid email address.";
     } 
 	} 
-}
-?>
+} 
+
+?> 
  </CENTER>
 </BODY>
 </HTML>

@@ -113,7 +113,8 @@ CREATE TABLE Offer (
     FOREIGN KEY (username) REFERENCES User(username),
     FOREIGN KEY (productID) REFERENCES Product(productID),
     FOREIGN KEY (datastateid) REFERENCES datastate(datastateid)
-);  
+);   
+
 INSERT INTO Offer (username, productID, numberOfUnits, unitPrice, details, category)
 VALUES ('berlangat@southwestern.edu', 3, 5, 10.99, 'This is a sample offer', 'Player Card');  
 INSERT INTO Offer (username, productID, numberOfUnits, unitPrice, details, category)

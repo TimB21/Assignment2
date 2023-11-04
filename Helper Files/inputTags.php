@@ -67,7 +67,7 @@ function buildPassword($name,$size = 20){
  * @return      string          HTML string representation of the INPUT tag
  */
 function buildRadio($name,$value,$checked = FALSE){
-	$result = '<INPUT type="radio" name="'.$name.'" id="'.$name.'" value="'.$value.'" '.($checked ? 'checked' : '').'>';
+	$result = '<INPUT type="radio" name="'.$name.'" id="'.$value.'" value="'.$value.'" '.($checked ? 'checked' : '').'>';
 	return $result;
 }
 

@@ -61,7 +61,7 @@ if (isset($_GET['productid'])) {
 	} 
 } 
 
-if(!isset($_POST['submitnew']) && !isset($_GET['productid'])) {   
+if(!isset($_POST['submitnew']) && !isset($_GET['productid']) && !isset($_POST['confirm'])) {   
 	?>
 	<CENTER>
     Fill out information about the product you intend to sell<BR>
@@ -184,7 +184,8 @@ if (isset($_POST['submitnew'])) {
 			</table>
 			<form method="post" action="product.php">
 				<input type="submit" name="confirm" id="confirm" value="All Information is Accurate. Offer Product"> 
-				<input type='hidden' name='emailaddressusername' value='<?php echo $email; ?>'>
+				<input type='hidden' name='emailaddressusername' value='<?php echo $email; ?>'> 
+				<input type='hidden' name='productid' value=
 				<input type='hidden' name='productcategoryid' value='<?php echo $productCategoryID; ?>'>
 				<input type='hidden' name='name' value='<?php echo $productName; ?>'>
 				<input type='hidden' name='description' value='<?php echo $productDescription; ?>'>
@@ -236,7 +237,16 @@ if (isset($_POST['submitnew'])) {
 } 
 
 if (isset($_POST['confirm'])) { 
-		
+	
+	// Check if the selected product ID is set
+    if (isset($_POST['productid'])) {
+        $selectedProductID = $_POST['productid'];
+    } else {
+        // Handle the case when no product ID is selected
+        echo "No product ID selected.";
+        // You can add further error handling or redirection here.
+    }
+	echo $selectedProductID;
 	// Retrieve product information from the form 
 	$email = $_POST['emailaddressusername'];
 	$productCategoryID = $_POST['productcategoryid'];  
@@ -267,7 +277,7 @@ if (isset($_POST['confirm'])) {
 
 	$productID = $_POST['productid'];
 	
-	if (productid === 'NEW') {
+	if ($productid === "NEW") {
 	// Insert the product information into the database
 	$insertNewProductQuery = "INSERT INTO Product (productName, description, categoryID) VALUES (?, ?, ?)";  
 	
@@ -316,7 +326,7 @@ if (isset($_POST['confirm'])) {
         header("Location: $productPageURL");
         exit;   
 		}   
-		else {
+		else { 
 			// Replace this with your actual database insert query
 			$selectedProductID = $_POST['productid'];
 			$insertOfferQuery = "INSERT INTO Offer (username, productID, numberOfUnits, unitPrice, details, category) 

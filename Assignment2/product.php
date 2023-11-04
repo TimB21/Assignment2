@@ -1,16 +1,15 @@
 <HTML>
 <BODY>
-<CENTER> 
+<CENTER>  
+<!--Header for the Product page -->
 <H1>Product Page</H1>
     (One person's garbage is another person's treasure!)<BR>
     <A href="assignment2.php">Search</A>
     <BR><BR> 
-	
-<!--Centered header for the Product page -->
+
 <CENTER>
 
 <?php
-// Useful functions written by me
 require_once("helper.php"); 
 
 if (isset($_GET['productid'])) {
@@ -18,25 +17,26 @@ if (isset($_GET['productid'])) {
     $productID = $_GET['productid'];
 
     // Query the database to retrieve product details based on the product ID
-    // Replace this with your own SQL query
     $query = "SELECT productid, singular, productName, description
               FROM Product
               JOIN Category ON Product.categoryID = Category.categoryID
 			  AND productid = $productID"; 
 
+	// Display the category, product name, and description
 	showQueryResultInHTML($query, "productid", array("singular" => "Category", "productName" => "Product Name", "description" => "Description"), NULL, NULL, NULL);  
 
+	// Query the database to retrieve all offers of the selected product
 	$selectOffersQuery = "SELECT o.username, p.productid, o.details, o.numberOfUnits
              FROM Product p
              JOIN Category c ON p.categoryID = c.categoryID
              JOIN Offer o ON p.productID = o.productID
              WHERE o.productid = $productID";
 
-        
+    // Display the outstanding offers based on the select offers query    
     echo "<h2>Outstanding Offers</h2>"; 
     showQueryResultInHTML($selectOffersQuery, "productid", array("username" => "Username", "numberOfUnits" => "# Available", "details" => "Details"), FALSE, NULL, NULL);  
 	
-	// Assuming $productID contains the specific product ID
+	// Query the database to find the offerid(s) of a specfic product
 	$selectOfferIdQuery = "SELECT offerid FROM Offer WHERE productID = $productID";
 
 	// Execute the query
@@ -44,6 +44,7 @@ if (isset($_GET['productid'])) {
 
 	$offerid = '';
 
+	// For each result display a buy button
 	if ($result) {
 		if ($result->num_rows > 0) {
 			$row = $result->fetch_assoc();
@@ -61,8 +62,10 @@ if (isset($_GET['productid'])) {
 	} 
 } 
 
+// Default page to insert product information
 if(!isset($_POST['submitnew']) && !isset($_GET['productid']) && !isset($_POST['confirm'])) {   
-	?>
+	?> 
+	<!-- Form for filling out product information -->
 	<CENTER>
     Fill out information about the product you intend to sell<BR>
     <TABLE border="1">
@@ -123,21 +126,15 @@ if(!isset($_POST['submitnew']) && !isset($_GET['productid']) && !isset($_POST['c
 <?php 
 // Check if the form is submitted
 if (isset($_POST['submitnew'])) {
-    // Get the user's username from the form
-    $userInput = $_POST['emailaddressusername'];
-
-    // Validate user input 
-    if (verifyEmailAddress($userInput)) {
-        // User input is a valid email address
-
-        // Retrieve product information from the form 
-		$email = $_POST['emailaddressusername'];
-        $productCategoryID = $_POST['productcategoryid']; 
-        $productName = $_POST['name']; 
-        $productDescription = $_POST['description']; 
-        $numberAvailable = $_POST['numberavailable'];
-        $sellingPrice = $_POST['sellingprice'];
-        $details = $_POST['details'];
+     // Retrieve product information from the form 
+    $userInput = $_POST['emailaddressusername']; 
+	$email = $_POST['emailaddressusername'];
+    $productCategoryID = $_POST['productcategoryid']; 
+    $productName = $_POST['name']; 
+    $productDescription = $_POST['description']; 
+    $numberAvailable = $_POST['numberavailable'];
+    $sellingPrice = $_POST['sellingprice'];
+    $details = $_POST['details'];
 		
 		// Perform input validation
         if (empty($productName)) {
@@ -146,7 +143,10 @@ if (isset($_POST['submitnew'])) {
             echo "Number offered must be an integer.";
         } elseif (!verifyMoney($sellingPrice)) {
             echo "Selling price must be a valid dollar amount.";  
-		}  
+		}   elseif (!verifyEmailAddress($userInput)) {
+            echo "You must under a valid email address.";  
+		}   
+		
 		else {   
 			?>
 			<table border="1">
@@ -219,33 +219,20 @@ if (isset($_POST['submitnew'])) {
 		} 
 		
 
-		// Same query as above, but HAVING clause will narrow the search.
-		// HAVING clause is required because I am referring to the aliases
-		// I defined using the AS keyword
+		// Query to retrieve the product information from the database in the same manner as search
 		$query = "SELECT productid, singular, productName, description
 				FROM Product
 				JOIN Category ON Product.categoryID = Category.categoryID
 				WHERE " . implode(" AND ", $searchChecks); 
 
+		// Display query results
 		showQueryResultInHTML($query, "productid", array("singular" => "Category", "productName" => "Product Name", "description" => "Description"), TRUE, "product.php", "productName"); 
-    } else {
-        // User input is not a valid email address, show an error message
-        echo "Invalid email address format. Please enter a valid email address.";
     } 
-	} 
 } 
 
+// If the post is set to confirm, meaning the user confirmed all information was accurate about the product and wants to place it on the shop
 if (isset($_POST['confirm'])) { 
 	
-	// Check if the selected product ID is set
-    if (isset($_POST['productid'])) {
-        $selectedProductID = $_POST['productid'];
-    } else {
-        // Handle the case when no product ID is selected
-        echo "No product ID selected.";
-        // You can add further error handling or redirection here.
-    }
-	echo $selectedProductID;
 	// Retrieve product information from the form 
 	$email = $_POST['emailaddressusername'];
 	$productCategoryID = $_POST['productcategoryid'];  
@@ -273,12 +260,11 @@ if (isset($_POST['confirm'])) {
 			echo "Category not found.";
 		}  
 	}  
-	
-	if ($productid === "NEW") {
+
 	// Insert the product information into the database
 	$insertNewProductQuery = "INSERT INTO Product (productName, description, categoryID) VALUES (?, ?, ?)";  
 	
-	$stmt = $mysql->prepare($insertProductQuery);  
+	$stmt = $mysql->prepare($insertNewProductQuery);  
 
 	if ($stmt === false) {
 		echo "Error preparing the statement for product insertion";
@@ -300,8 +286,10 @@ if (isset($_POST['confirm'])) {
 		
 		$offerstmt = $mysql->prepare($insertOfferQuery);  
 
-		$getLastInsertedIDQuery = $mysql->insert_id; 
-
+		// Get the last inserted ID using a query  
+		// Could not get it using the mysql->insert_id so i used the method from the referenced site
+		// https://www.w3schools.com/sql/func_mysql_last_insert_id.asp
+		$getLastInsertedIDQuery = "SELECT LAST_INSERT_ID() as last_id";
 		$result = $mysql->query($getLastInsertedIDQuery);
 		
 		if ($result) {
@@ -322,35 +310,8 @@ if (isset($_POST['confirm'])) {
         $productPageURL = "product.php?productid=" . $lastInsertedProductID;
         header("Location: $productPageURL");
         exit;   
-		}   
-		else { 
-			// Replace this with your actual database insert query
-			$selectedProductID = $_POST['productid'];
-			$insertOfferQuery = "INSERT INTO Offer (username, productID, numberOfUnits, unitPrice, details, category) 
-								VALUES (?, ?, ?, ?, ?, ?)";
-			
-			// Prepare the statement
-			$stmt = $mysql->prepare($insertOfferQuery);
-	
-			if ($stmt === false) {
-				echo "Error preparing the statement for offer insertion";
-			} else {
-				$numberOfUnits = 1; // You can adjust this as needed
-	
-				// Bind the parameters
-				$stmt->bind_param("siiiss", $email, $selectedProductID, $numberOfUnits, $sellingPrice, $details, $productCategoryID);
-	
-				// Execute the insert statement
-				$stmt->execute();
-	
-				// Close the statement
-				$stmt->close();
-	
-				// Display a success message
-				echo "Offer has been successfully recorded for the selected product.";
-			}
-		}
-}
+}   
+		
 
 
 ?> 

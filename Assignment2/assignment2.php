@@ -3,7 +3,8 @@
 <HTML>
 <BODY>
 
-<CENTER>
+<CENTER> 
+<!--Display for main page with the option to search, sell product, and account -->
 <H1>Sport Fanatic Online Trading Post</H1>
 (Get the collectables your friends will be jealous about)
 
@@ -27,14 +28,14 @@
 
 <CENTER>
 <?php
-// Useful functions written 
 require_once("helper.php"); 
 
+// retrieves search term and category id
 $searchtext = getRequestData("search"); 
 $category = getRequestData("productcategoryid"); 
 
 if($searchtext !== "") { // If the search interface has been filled out
-	// Complicated helper function that splits up user input into separate search terms
+	// Helper function that splits up user input into separate search terms
 	$searchComponents = getSearchStringComponents($searchtext);	 
 
 	// Debugging tool
@@ -61,13 +62,12 @@ if($searchtext !== "") { // If the search interface has been filled out
         $categoryCondition = "AND Category.categoryID = $category";
     }
 
-	// Same query as above, but HAVING clause will narrow the search.
-	// HAVING clause is required because I am referring to the aliases
-	// I defined using the AS keyword
+	// Product information query
 	$query = "SELECT productid, singular, productName, description
               FROM Product
               JOIN Category ON Product.categoryID = Category.categoryID
-              WHERE " . implode(" AND ", $searchChecks). " $categoryCondition";
+              WHERE " . implode(" AND ", $searchChecks). " $categoryCondition"; 
+	// Display product information
     showQueryResultInHTML($query, "productid", array("singular" => "Category", "productName" => "Product Name", "description" => "Description"), FALSE, "product.php", "productName");
 }	 
 ?>  

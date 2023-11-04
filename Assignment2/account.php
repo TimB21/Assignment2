@@ -66,37 +66,55 @@ if (isset($_POST['login'])) {
         if (isset($_POST['newuser']) && $_POST['newuser'] === 'new') {
             // Check if the "New User" radio button is selected      
             $username = $userInput;
-            
-            // Validate user input
-            if (verifyEmailAddress($userInput)) {
-                // User input is a valid email address
-                // Prepare the INSERT statement
-                $insertQuery = "INSERT INTO User (username, datastateid) VALUES (?, 1)"; 
-                $stmt = $mysql->prepare($insertQuery);
         
-                if ($stmt === false) {
-                    echo "Error preparing the statement";
-                } else {
-                    // Bind the username parameter
-                    $stmt->bind_param("s", $userInput);
+            // Prepare a SELECT statement to check if the username already exists
+            $checkUserQuery = "SELECT username FROM User WHERE username = ?";
+            $stmtCheck = $mysql->prepare($checkUserQuery);
         
-                    // Execute the INSERT statement
-                    if ($stmt->execute()) {
-                        // New user created successfully
-                        echo "New user created successfully!";
-                    } else {
-                        // Error occurred while creating a new user
-                        echo "Error creating a new user. Please try again.";
-                    }
-        
-                    // Close the statement and the database connection
-                    $stmt->close();
-                }
+            if ($stmtCheck === false) {
+                echo "Error preparing the statement for checking the username";
             } else {
-                // User input is not a valid email address, show an error message
-                echo "Invalid email address format. Please enter a valid email address.";
+                // Bind the username parameter
+                $stmtCheck->bind_param("s", $userInput);
+        
+                // Execute the SELECT statement
+                if ($stmtCheck->execute()) {
+                    $result = $stmtCheck->get_result();
+        
+                    if ($result->num_rows === 0) {
+                        // User input is a valid email address
+                        // Prepare the INSERT statement  
+                        $insertQuery = "INSERT INTO User (username, datastateid) VALUES (?, 1)"; 
+                        $stmt = $mysql->prepare($insertQuery); 
+                
+                        if ($stmt === false) {
+                            echo "Error preparing the statement";
+                        } else {
+                            // Bind the username parameter
+                            $stmt->bind_param("s", $userInput);
+                
+                            // Execute the INSERT statement
+                            if ($stmt->execute()) {
+                                // New user created successfully
+                                echo "New user created successfully!";
+                            } else {
+                                // Error occurred while creating a new user
+                                echo "Error creating a new user. Please try again.";
+                            }
+                
+                            // Close the statement and the database connection
+                            $stmt->close();
+                        }
+                    } else { 
+                        echo "You are already in the database silly. Here is your information";
+                    }
+                    
+                    // Close the statement for checking the username
+                    $stmtCheck->close();
+                } 
             }
         }
+        
 
         // Prepare the SQL statement
         $selectUserQuery = "SELECT * FROM User WHERE username = ?";
@@ -157,48 +175,11 @@ if (isset($_POST['login'])) {
         // User input is not a valid email address, show an error message
         echo "Invalid email address format. Please enter a valid email address.";
     }
-} 
+    }  
+}
 ?>
 
 <?php
-if (isset($_POST['newuser'])) {
-    // Check if the "New User" radio button is selected
-
-    // Retrieve user input (email/username)
-    $userInput = $_POST['emailaddressusername'];
-
-    // Validate user input
-    if (verifyEmailAddress($userInput)) {
-        // User input is a valid email address
-
-        // Prepare the INSERT statement
-        $insertQuery = "INSERT INTO User (username, datastateid) VALUES (?, 1)";
-        $stmt = $mysql->prepare($insertQuery);
-
-        if ($stmt === false) {
-            echo "Error preparing the statement";
-        } else {
-            // Bind the username parameter
-            $stmt->bind_param("s", $userInput);
-
-            // Execute the INSERT statement
-            if ($stmt->execute()) {
-                // New user created successfully
-                echo "New user created successfully!";
-            } else {
-                // Error occurred while creating a new user
-                echo "Error creating a new user. Please try again.";
-            }
-
-            // Close the statement and the database connection
-            $stmt->close();
-        }
-    } else {
-        // User input is not a valid email address, show an error message
-        echo "Invalid email address format. Please enter a valid email address.";
-    }
-}
-}
 
 if (isset($_POST['buy'])) {  
     $quantity = $_POST['numberpurchased']; // Assuming this is the input field for quantity

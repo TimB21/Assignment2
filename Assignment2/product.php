@@ -185,7 +185,6 @@ if (isset($_POST['submitnew'])) {
 			<form method="post" action="product.php">
 				<input type="submit" name="confirm" id="confirm" value="All Information is Accurate. Offer Product"> 
 				<input type='hidden' name='emailaddressusername' value='<?php echo $email; ?>'> 
-				<input type='hidden' name='productid' value=
 				<input type='hidden' name='productcategoryid' value='<?php echo $productCategoryID; ?>'>
 				<input type='hidden' name='name' value='<?php echo $productName; ?>'>
 				<input type='hidden' name='description' value='<?php echo $productDescription; ?>'>
@@ -274,8 +273,6 @@ if (isset($_POST['confirm'])) {
 			echo "Category not found.";
 		}  
 	}  
-
-	$productID = $_POST['productid'];
 	
 	if ($productid === "NEW") {
 	// Insert the product information into the database
@@ -303,7 +300,7 @@ if (isset($_POST['confirm'])) {
 		
 		$offerstmt = $mysql->prepare($insertOfferQuery);  
 
-		$getLastInsertedIDQuery = "SELECT LAST_INSERT_ID() as last_id";  
+		$getLastInsertedIDQuery = $mysql->insert_id; 
 
 		$result = $mysql->query($getLastInsertedIDQuery);
 		
